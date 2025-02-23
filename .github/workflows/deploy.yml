@@ -1,0 +1,32 @@
+name: Deploy to GCP Workbench
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init -chdir=./terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -chdir=./terraform
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Copy files to GCP Workbench
+        run: |
+          gcloud compute scp --recurse ./notebooks/ ./scripts/ ./requirements.txt my-workbench-instance:/home/jupyter/ --zone=us-central1-a
+
+      - name: Run setup script on Workbench
+        run: |
+          gcloud compute ssh my-workbench-instance --zone=us-central1-a --command="bash /home/jupyter/scripts/setup.sh"

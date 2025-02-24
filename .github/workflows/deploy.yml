@@ -21,11 +21,12 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve -chdir=./terraform
         env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS_JSON }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Copy files to GCP Workbench
         run: |
-          gcloud compute scp --recurse ./notebooks/ ./scripts/ ./requirements.txt my-workbench-instance:/home/jupyter/ --zone=us-central1-a
+          gcloud compute scp --recurse ./notebooks/ ./data/ ./scripts/ ./requirements.txt my-workbench-instance:/home/jupyter/ --zone=us-central1-a
 
       - name: Run setup script on Workbench
         run: |
